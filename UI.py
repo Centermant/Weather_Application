@@ -1,5 +1,8 @@
 import flet as ft
 import random
+import requests
+import json
+from datetime import datetime
 
 # Стилизация
 BACKGROUND_COLOR = "#E8F5E9"  # Светло-зеленый фон
@@ -31,7 +34,8 @@ JOKES = [  # Список шуток для отображения
     "Почему пингвины не летают? Потому что есть авиакомпании!"
 ]
 
-CITY_LIST = ["Москва", "Краснодар", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Сочи", "Казань", "Ростов-на-Дону"]
+CITY_LIST = ["Москва", "Краснодар", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Сочи", "Казань",
+             "Ростов-на-Дону"]
 
 # Для картинки
 IMAGE_URL = "https://cdn1.ozone.ru/s3/multimedia-m/6232237966.jpg"  # Ссылка на изображение
@@ -108,7 +112,8 @@ class CitySelectForm:
             bgcolor=CITY_INPUT_BG_COLOR,
             border_color=TEXT_COLOR,
             width=ELEMENT_WIDTH,
-            on_change=self.update_suggestions
+            on_change=self.update_suggestions,
+            value='Москва'
         )
         self.suggestion_list = ft.Container(
             content=ft.ListView(
@@ -224,15 +229,64 @@ class WeatherView:
         """
         self.app = app
         self.random_joke = random.choice(JOKES)
-        self.all_columns = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье",
-                            "Дополнительный", "Еще один"]
-        self.all_data = [
-            ["Солнечно"] * len(self.all_columns),
-            ["25°C"] * len(self.all_columns),
-            ["Ветер"] * len(self.all_columns),
-            ["Облачно"] * len(self.all_columns),
-            ["Дождь"] * len(self.all_columns),
-        ]
+        self.all_columns = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
+        API_KEY = "7ab029060bfd469aa0a90503250403"
+        request_line = (
+            f"http://api.weatherapi.com/v1/forecast.json?"
+            f"key={API_KEY}&"
+            f"q={self.app.selected_city}&"
+            f"days=7&"
+            f"aqi=no&"
+            f"alerts=no&"
+            f"lang=ru"
+        )
+        response = requests.get(request_line).json()
+        # Извлечение прогноза на неделю
+        forecast_days = response['forecast']['forecastday']
+
+        # Создание списка дат
+        dates = [datetime.fromtimestamp(day['date_epoch']).strftime('%Y-%m-%d') for day in forecast_days]
+
+        # Создание матрицы данных
+        matrix_data = {
+            "avgtemp_c": [],
+            "condition_text": [],
+            "condition_icon": [],
+            "precipitation": []
+        }
+
+        # Заполнение матрицы
+        for day in forecast_days:
+            # Средняя температура
+            matrix_data["avgtemp_c"].append(day['day']['avgtemp_c'])
+
+            # Текстовое описание погоды
+            condition_text = day['day']['condition']['text']
+            matrix_data["condition_text"].append(condition_text)
+
+            # Иконка погоды
+            icon_url = f"https://cdn.weatherapi.com/weather/64x64/day/{day['day']['condition']['icon'].split('/')[-1]}"
+            matrix_data["condition_icon"].append(icon_url)
+
+            # Наличие осадков (да/нет)
+            precipitation = "Да" if day['day']['daily_will_it_rain'] == 1 or day['day'][
+                'daily_will_it_snow'] == 1 else "Нет"
+            matrix_data["precipitation"].append(precipitation)
+
+        # Вывод матрицы в табличном виде
+        print(f"{'Параметр':<20} | {' '.join(dates)}")
+        print("-" * (20 + len(dates) * 12))
+
+        # Формирование строк матрицы
+        for parameter, values in matrix_data.items():
+            row = [str(value) for value in values]
+            print(f"{parameter:<20} | {' | '.join(row)}")
+        # self.all_data = [
+        #     ["Солнечно"] * len(self.all_columns),
+        #     ["25°C"] * len(self.all_columns),
+        #     ["Ветер"] * len(self.all_columns)
+        # ]
+        self.all_data = matrix_data
         self.cols_per_page = 5
         self.current_offset = 0
 
@@ -278,7 +332,7 @@ class WeatherView:
     def build_view(self):
         """Создает представление окна погоды."""
         city_text = ft.Text(f"Погода в городе: {self.app.selected_city or 'Не выбран'}",
-                             color=TEXT_COLOR, font_family=FONT_FAMILY, size=20, weight=ft.FontWeight.BOLD)
+                            color=TEXT_COLOR, font_family=FONT_FAMILY, size=20, weight=ft.FontWeight.BOLD)
 
         panel1 = ft.Container(
             content=ft.Column(
