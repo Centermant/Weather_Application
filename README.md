@@ -8,6 +8,6 @@
    ![Первое окно приложения](images/1.png)
    ![Второе окно приложения](images/2.png)
    
- Технологии: Python, Flet, Weather API, Requests, JSON.
+ Технологии: Python, Flutter, Weather API.
 
  Авторы: Грибков Дмитрий, Лещенко Андрей, Тананин Иван.
