@@ -1,6 +1,7 @@
 import random
 import flet as ft
 from backend import WeatherAPI
+from secret import *
 
 BACKGROUND_COLOR = "#E8F5E9"
 TEXT_COLOR = "#212121"
@@ -29,7 +30,7 @@ class WeatherApp:
         self.page = page
         self.selected_city = None
         self.weather_view = None
-        self.api = WeatherAPI(api_key="7ab029060bfd469aa0a90503250403")
+        self.api = WeatherAPI(api_key1)
 
     def did_mount(self):
         self.page.go("/city_select")
