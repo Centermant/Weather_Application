@@ -125,6 +125,7 @@ class CitySelectForm:
         self.app.page.update()
 
     def confirm_city_selection(self, e):
+
         self.app.selected_city = self.city_input.value
         self.app.go_weather_view()
 
@@ -166,7 +167,6 @@ class WeatherView:
         self.app = app
         self.random_joke = random.choice(STIHI)
         self.all_columns = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"]
-
         forecast_data = self.app.api.get_weather_forecast(self.app.selected_city)
         forecast_days = forecast_data['forecast']['forecastday']
         self.app.api.build_graphs(forecast_days)
@@ -194,7 +194,7 @@ class WeatherView:
     @property
     def build_view(self):
         back_button = ft.ElevatedButton(
-            text="Выбрать другой город",
+            text="≡",
             on_click=lambda _: self.app.page.go("/city_select"),
             style=ft.ButtonStyle(
                 padding=ft.padding.symmetric(horizontal=20, vertical=10),
@@ -204,7 +204,7 @@ class WeatherView:
 
         city_text_container = ft.Container(
             content=ft.Text(
-                f"Погода в городе: {self.app.selected_city or 'Не выбран'}",
+                f"{self.app.selected_city}",
                 color=TEXT_COLOR,
                 font_family=FONT_FAMILY,
                 size=20,
@@ -377,7 +377,7 @@ class WeatherView:
         main_column = ft.Column(
             [
                 ft.Row(
-                    [back_button, city_text_container, ft.ElevatedButton(text="X", on_click=exit_program)],
+                    [back_button, city_text_container],#, ft.ElevatedButton(text="X", on_click=exit_program)],
                     alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                 ),
                 panel1,
@@ -395,25 +395,3 @@ class WeatherView:
         )
 
 
-def main(page: ft.Page):
-    page.title = "Погода"
-    page.bgcolor = BACKGROUND_COLOR
-    page.theme = ft.Theme(font_family=FONT_FAMILY)
-    page.window_resizable = False
-    page.window.full_screen = False
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER
-    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-
-    def route_change(route):
-        if app.weather_view:
-            app.weather_view.update_table()
-        app.route_change(route)
-
-    page.on_route_change = route_change
-    app = WeatherApp(page)
-    app.did_mount()
-    page.add(app.build())
-
-
-if __name__ == "__main__":
-    ft.app(target=main)

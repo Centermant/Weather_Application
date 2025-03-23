@@ -1,4 +1,3 @@
-import random
 import requests
 import matplotlib.pyplot as plt
 from datetime import datetime
