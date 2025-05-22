@@ -1,6 +1,8 @@
 import requests
-import matplotlib.pyplot as plt
+import pygal
+import cairosvg
 from datetime import datetime
+from pygal.style import Style
 
 
 
@@ -54,31 +56,47 @@ class WeatherAPI:
         temperatures = [day['day']['avgtemp_c'] for day in forecast_days]
         humidity = [day['day']['avghumidity'] for day in forecast_days]
 
+        # Общий стиль графиков
+        custom_style = Style(
+            font_family='Roboto',
+            title_font_size=14,
+            label_font_size=12,
+            major_label_font_size=10,
+            colors=('#2196F3', '#FF9800')  # Синий и оранжевый
+        )
+
         # График температуры
-        plt.figure(figsize=(10, 4))
-        plt.plot(dates, temperatures, label='Средняя температура (°C)', marker='o', color='blue')
-        plt.title('Прогноз средней температуры на неделю', fontsize=14)
-        plt.xlabel('Дата', fontsize=12)
-        plt.ylabel('Температура (°C)', fontsize=12)
-        plt.xticks(rotation=45, fontsize=10)
-        plt.legend(fontsize=12)
-        plt.grid(True, linestyle='--', alpha=0.7)
-        plt.tight_layout()
-        plt.savefig('temperature_forecast.png', dpi=300, bbox_inches='tight')
-        plt.close()
+        chart_temp = pygal.Line(
+            style=custom_style,
+            x_label_rotation=45,
+            show_legend=False,
+            width=800,
+            height=300,
+            margin=20,
+            explicit_size=True
+        )
+        chart_temp.title = 'Прогноз температуры (°C)'
+        chart_temp.x_labels = dates
+        chart_temp.add('', temperatures)
+        chart_temp.render_to_file('temperature_forecast.svg')
+        cairosvg.svg2png(url='temperature_forecast.svg', write_to='temperature_forecast.png')
 
         # График влажности
-        plt.figure(figsize=(10, 4))
-        plt.plot(dates, humidity, label='Средняя влажность (%)', marker='s', color='orange')
-        plt.title('Прогноз средней влажности на неделю', fontsize=14)
-        plt.xlabel('Дата', fontsize=12)
-        plt.ylabel('Влажность (%)', fontsize=12)
-        plt.xticks(rotation=45, fontsize=10)
-        plt.legend(fontsize=12)
-        plt.grid(True, linestyle='--', alpha=0.7)
-        plt.tight_layout()
-        plt.savefig('humidity_forecast.png', dpi=300, bbox_inches='tight')
-        plt.close()
+        chart_hum = pygal.Line(
+            style=custom_style,
+            x_label_rotation=45,
+            show_legend=False,
+            width=800,
+            height=300,
+            margin=20,
+            explicit_size=True
+        )
+        chart_hum.title = 'Прогноз влажности (%)'
+        chart_hum.x_labels = dates
+        chart_hum.add('', humidity)
+        chart_hum.render_to_file('humidity_forecast.svg')
+        cairosvg.svg2png(url='humidity_forecast.svg', write_to='humidity_forecast.png')
+
 
     def extract_weather_data(self, forecast_days):
         """

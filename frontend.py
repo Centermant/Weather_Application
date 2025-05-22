@@ -33,6 +33,8 @@ class WeatherApp:
         self.api = WeatherAPI(api_key1)
 
     def did_mount(self):
+        self.page.window.maximized = True  # Полноэкранный режим
+        self.page.update()
         self.page.go("/city_select")
 
     def route_change(self, route):
@@ -383,7 +385,7 @@ class WeatherView:
                 panel1,
                 panel2,
                 panel3,
-                ft.Row([panel4, panel5], alignment=ft.MainAxisAlignment.CENTER, expand=True),
+                # ft.Row([panel4, panel5], alignment=ft.MainAxisAlignment.CENTER, expand=True),
             ],
             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             expand=True,
